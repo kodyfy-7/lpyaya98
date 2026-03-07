@@ -19,4 +19,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(function (Request $request, Throwable $e) {
             return $request->is('api/*');
         });
+
+        $exceptions->render(function (Throwable $e, Request $request) {
+            if ($request->is('api/*')) {
+                $status = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+
+                return response()->json([
+                    'success' => false,
+                    'message' => $e->getMessage(),
+                ], $status);
+            }
+        });
     })->create();
