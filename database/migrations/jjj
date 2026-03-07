@@ -1,0 +1,404 @@
+<?php
+
+// ============================================================
+// MIGRATIONS — place each class in its own file under
+// database/migrations/ with the appropriate timestamp prefix.
+// Order matters for foreign keys:
+//   1. provinces  2. roles  3. zones  4. areas  5. parishes
+//   6. departments  7. positions  8. users  9. members
+//  10. modules  11. module_privileges  12. role_privileges
+//  13. position_privileges  14. permissions  15. role_permissions
+//  16. transactions  17. email_verifications
+//  18. events  19. event_participants
+// ============================================================
+
+// ──────────────────────────────────────────
+// 2024_01_01_000001_create_provinces_table.php
+// ──────────────────────────────────────────
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
+
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('provinces', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->string('name');
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('provinces'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000002_create_roles_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('roles', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->string('name')->unique();
+            $table->text('description')->nullable();
+            $table->boolean('is_default')->default(false);
+            $table->boolean('is_super_admin')->default(false);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('roles'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000003_create_zones_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('zones', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->string('name');
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('zones'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000004_create_areas_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('areas', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('zone_id');
+            $table->foreign('zone_id')->references('id')->on('zones')->onDelete('CASCADE');
+            $table->string('name');
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('areas'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000005_create_parishes_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('parishes', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('area_id');
+            $table->foreign('area_id')->references('id')->on('areas')->onDelete('CASCADE');
+            $table->string('name');
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('parishes'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000006_create_departments_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('departments', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->string('name');
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('departments'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000007_create_positions_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('positions', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->string('name');
+            $table->enum('level', ['province', 'zone', 'area', 'parish'])->default('province');
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('positions'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000008_create_users_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('users', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('password')->nullable();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->timestamp('deactivated_at')->nullable();
+            $table->integer('email_verification_otp')->nullable();
+            $table->timestamp('email_verification_otp_expire_in')->nullable();
+            $table->integer('password_reset_otp')->nullable();
+            $table->timestamp('password_reset_otp_expire_in')->nullable();
+            $table->uuid('role_id')->nullable();
+            $table->foreign('role_id')->references('id')->on('roles')->nullOnDelete();
+            $table->boolean('is_admin')->default(false);
+            $table->boolean('is_super_admin')->default(false);
+            $table->string('phone_number')->nullable();
+            $table->text('address')->nullable();
+            $table->string('education')->nullable();
+            $table->string('date_of_birth')->nullable();
+            $table->string('gender')->nullable();
+            $table->string('occupation')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('users'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000009_create_members_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('members', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');
+            $table->uuid('zone_id')->nullable();
+            $table->foreign('zone_id')->references('id')->on('zones')->nullOnDelete();
+            $table->uuid('zone_position_id')->nullable();
+            $table->foreign('zone_position_id')->references('id')->on('positions')->nullOnDelete();
+            $table->uuid('area_id')->nullable();
+            $table->foreign('area_id')->references('id')->on('areas')->nullOnDelete();
+            $table->uuid('area_position_id')->nullable();
+            $table->foreign('area_position_id')->references('id')->on('positions')->nullOnDelete();
+            $table->uuid('province_id')->nullable();
+            $table->foreign('province_id')->references('id')->on('provinces')->nullOnDelete();
+            $table->uuid('province_position_id')->nullable();
+            $table->foreign('province_position_id')->references('id')->on('positions')->nullOnDelete();
+            $table->uuid('parish_id')->nullable();
+            $table->foreign('parish_id')->references('id')->on('parishes')->nullOnDelete();
+            $table->uuid('parish_position_id')->nullable();
+            $table->foreign('parish_position_id')->references('id')->on('positions')->nullOnDelete();
+            $table->uuid('department_id')->nullable();
+            $table->foreign('department_id')->references('id')->on('departments')->nullOnDelete();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('members'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000010_create_modules_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('modules', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->string('name', 255);
+            $table->string('slug', 255)->unique();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('modules'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000011_create_module_privileges_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('module_privileges', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('module_id');
+            $table->foreign('module_id')->references('id')->on('modules')->onDelete('CASCADE');
+            $table->string('name', 255);
+            $table->string('slug', 255)->unique();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('module_privileges'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000012_create_role_privileges_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('role_privileges', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('role_id');
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('CASCADE');
+            $table->uuid('privilege_id');
+            $table->foreign('privilege_id')->references('id')->on('module_privileges')->onDelete('CASCADE');
+            $table->unique(['role_id', 'privilege_id']);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('role_privileges'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000013_create_position_privileges_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('position_privileges', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('position_id');
+            $table->foreign('position_id')->references('id')->on('positions')->onDelete('CASCADE');
+            $table->uuid('privilege_id');
+            $table->foreign('privilege_id')->references('id')->on('module_privileges')->onDelete('CASCADE');
+            $table->unique(['position_id', 'privilege_id']);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('position_privileges'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000014_create_permissions_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('permissions', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->string('name')->unique();
+            $table->string('slug')->unique();
+            $table->jsonb('level');
+            $table->string('module');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('permissions'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000015_create_role_permissions_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('role_permissions', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('role_id');
+            $table->foreign('role_id')->references('id')->on('roles')->onDelete('CASCADE');
+            $table->uuid('permission_id');
+            $table->foreign('permission_id')->references('id')->on('permissions')->onDelete('CASCADE');
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('role_permissions'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000016_create_transactions_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('transactions', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');
+            $table->integer('amount'); // smallest currency unit (kobo/cents)
+            $table->enum('status', ['pending', 'success', 'failed'])->default('pending');
+            $table->string('payment_method');
+            $table->string('reference')->unique();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('transactions'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000017_create_email_verifications_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('email_verifications', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('CASCADE');
+            $table->integer('otp');
+            $table->timestamp('otp_expires_at');
+            $table->timestamp('expired_at')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('email_verifications'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000018_create_events_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('events', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->string('title');
+            $table->text('description');
+            $table->enum('type', ['province', 'zone', 'area', 'parish']);
+            $table->uuid('parent_id')->nullable();
+            $table->date('start_date');
+            $table->date('end_date')->nullable();
+            $table->time('start_time');
+            $table->float('registration_fee')->nullable();
+            $table->string('location')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('events'); }
+};
+
+// ──────────────────────────────────────────
+// 2024_01_01_000019_create_event_participants_table.php
+// ──────────────────────────────────────────
+return new class extends Migration {
+    public function up(): void {
+        Schema::create('event_participants', function (Blueprint $table) {
+            $table->uuid('id')->primary()->default(DB::raw('gen_random_uuid()'));
+            $table->uuid('event_id');
+            $table->foreign('event_id')->references('id')->on('events')->onDelete('CASCADE');
+            $table->string('name');
+            $table->string('phone_number');
+            $table->uuid('zone_id');
+            $table->foreign('zone_id')->references('id')->on('zones');
+            $table->uuid('area_id');
+            $table->foreign('area_id')->references('id')->on('areas');
+            $table->uuid('parish_id');
+            $table->foreign('parish_id')->references('id')->on('parishes');
+            $table->boolean('attended')->nullable();
+            $table->boolean('registration_approved')->nullable();
+            $table->string('location')->nullable();
+            $table->string('registration_number')->nullable();
+            $table->string('gender')->nullable();
+            $table->string('email')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+        });
+    }
+    public function down(): void { Schema::dropIfExists('event_participants'); }
+};

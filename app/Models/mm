@@ -1,0 +1,464 @@
+<?php
+
+// ============================================================
+// MODELS — place each class in its own file under app/Models/
+// ============================================================
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+
+// ──────────────────────────────────────────
+// app/Models/Province.php
+// ──────────────────────────────────────────
+class Province extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable  = ['name', 'status'];
+}
+
+// ──────────────────────────────────────────
+// app/Models/Role.php
+// ──────────────────────────────────────────
+class Role extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable  = ['name', 'description', 'is_default', 'is_super_admin'];
+
+    protected $casts     = [
+        'is_default'    => 'boolean',
+        'is_super_admin' => 'boolean',
+    ];
+
+    public function users()
+    {
+        return $this->hasMany(User::class, 'role_id');
+    }
+
+    public function privileges()
+    {
+        return $this->hasMany(RolePrivilege::class, 'role_id');
+    }
+
+    public function permissions()
+    {
+        return $this->hasMany(RolePermission::class, 'role_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/Zone.php
+// ──────────────────────────────────────────
+class Zone extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable  = ['name', 'status'];
+
+    public function areas()
+    {
+        return $this->hasMany(Area::class, 'zone_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/Area.php
+// ──────────────────────────────────────────
+class Area extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable  = ['zone_id', 'name', 'status'];
+
+    public function zone()
+    {
+        return $this->belongsTo(Zone::class, 'zone_id');
+    }
+
+    public function parishes()
+    {
+        return $this->hasMany(Parish::class, 'area_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/Parish.php
+// ──────────────────────────────────────────
+class Parish extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable  = ['area_id', 'name', 'status'];
+
+    public function area()
+    {
+        return $this->belongsTo(Area::class, 'area_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/Department.php
+// ──────────────────────────────────────────
+class Department extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable  = ['name', 'status'];
+}
+
+// ──────────────────────────────────────────
+// app/Models/Position.php
+// ──────────────────────────────────────────
+class Position extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable  = ['name', 'level', 'status'];
+
+    public function privileges()
+    {
+        return $this->hasMany(PositionPrivilege::class, 'position_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/User.php
+// ──────────────────────────────────────────
+class User extends Authenticatable
+{
+    // use SoftDeletes;
+
+    protected $keyType      = 'string';
+    public    $incrementing = false;
+
+    protected $fillable = [
+        'name', 'email', 'password', 'role_id',
+        'is_admin', 'is_super_admin', 'phone_number',
+        'address', 'education', 'date_of_birth', 'gender', 'occupation',
+        'email_verified_at', 'deactivated_at',
+        'email_verification_otp', 'email_verification_otp_expire_in',
+        'password_reset_otp', 'password_reset_otp_expire_in',
+    ];
+
+    protected $hidden = ['password'];
+
+    protected $casts = [
+        'is_admin'                         => 'boolean',
+        'is_super_admin'                   => 'boolean',
+        'email_verified_at'                => 'datetime',
+        'deactivated_at'                   => 'datetime',
+        'email_verification_otp_expire_in' => 'datetime',
+        'password_reset_otp_expire_in'     => 'datetime',
+    ];
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    public function members()
+    {
+        return $this->hasMany(Member::class, 'user_id');
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'user_id');
+    }
+
+    public function emailVerifications()
+    {
+        return $this->hasMany(EmailVerification::class, 'user_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/Member.php
+// ──────────────────────────────────────────
+class Member extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable = [
+        'user_id', 'zone_id', 'zone_position_id',
+        'area_id', 'area_position_id',
+        'province_id', 'province_position_id',
+        'parish_id', 'parish_position_id',
+        'department_id',
+    ];
+
+    public function user()       { return $this->belongsTo(User::class, 'user_id'); }
+    public function zone()       { return $this->belongsTo(Zone::class, 'zone_id'); }
+    public function area()       { return $this->belongsTo(Area::class, 'area_id'); }
+    public function province()   { return $this->belongsTo(Province::class, 'province_id'); }
+    public function parish()     { return $this->belongsTo(Parish::class, 'parish_id'); }
+    public function department() { return $this->belongsTo(Department::class, 'department_id'); }
+
+    public function zonePosition()
+    {
+        return $this->belongsTo(Position::class, 'zone_position_id');
+    }
+
+    public function areaPosition()
+    {
+        return $this->belongsTo(Position::class, 'area_position_id');
+    }
+
+    public function provincePosition()
+    {
+        return $this->belongsTo(Position::class, 'province_position_id');
+    }
+
+    public function parishPosition()
+    {
+        return $this->belongsTo(Position::class, 'parish_position_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/Module.php
+// ──────────────────────────────────────────
+class Module extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable = ['name', 'slug'];
+
+    public function privileges()
+    {
+        return $this->hasMany(ModulePrivilege::class, 'module_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/ModulePrivilege.php
+// ──────────────────────────────────────────
+class ModulePrivilege extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable = ['module_id', 'name', 'slug'];
+
+    public function module()
+    {
+        return $this->belongsTo(Module::class, 'module_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/RolePrivilege.php
+// ──────────────────────────────────────────
+class RolePrivilege extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable = ['role_id', 'privilege_id'];
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    public function privilege()
+    {
+        return $this->belongsTo(ModulePrivilege::class, 'privilege_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/PositionPrivilege.php
+// ──────────────────────────────────────────
+class PositionPrivilege extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable = ['position_id', 'privilege_id'];
+
+    public function position()
+    {
+        return $this->belongsTo(Position::class, 'position_id');
+    }
+
+    public function privilege()
+    {
+        return $this->belongsTo(ModulePrivilege::class, 'privilege_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/Permission.php
+// ──────────────────────────────────────────
+class Permission extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable = ['name', 'slug', 'level', 'module'];
+
+    protected $casts = [
+        'level' => 'array', // JSONB stored as array
+    ];
+}
+
+// ──────────────────────────────────────────
+// app/Models/RolePermission.php
+// ──────────────────────────────────────────
+class RolePermission extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable = ['role_id', 'permission_id'];
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class, 'role_id');
+    }
+
+    public function permission()
+    {
+        return $this->belongsTo(Permission::class, 'permission_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/Transaction.php
+// ──────────────────────────────────────────
+class Transaction extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable = [
+        'user_id', 'amount', 'status', 'payment_method', 'reference',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/EmailVerification.php
+// ──────────────────────────────────────────
+class EmailVerification extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable = ['user_id', 'otp', 'otp_expires_at', 'expired_at'];
+
+    protected $casts = [
+        'otp_expires_at' => 'datetime',
+        'expired_at'     => 'datetime',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/Event.php
+// ──────────────────────────────────────────
+class Event extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable = [
+        'title', 'description', 'type', 'parent_id',
+        'start_date', 'end_date', 'start_time',
+        'registration_fee', 'location',
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date'   => 'date',
+    ];
+
+    public function participants()
+    {
+        return $this->hasMany(EventParticipant::class, 'event_id');
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Models/EventParticipant.php
+// ──────────────────────────────────────────
+class EventParticipant extends Model
+{
+    // use SoftDeletes;
+
+    protected $keyType   = 'string';
+    public    $incrementing = false;
+
+    protected $fillable = [
+        'event_id', 'name', 'phone_number',
+        'zone_id', 'area_id', 'parish_id',
+        'attended', 'registration_approved',
+        'location', 'registration_number', 'gender', 'email',
+    ];
+
+    protected $casts = [
+        'attended'               => 'boolean',
+        'registration_approved'  => 'boolean',
+    ];
+
+    public function event()  { return $this->belongsTo(Event::class, 'event_id'); }
+    public function zone()   { return $this->belongsTo(Zone::class, 'zone_id'); }
+    public function area()   { return $this->belongsTo(Area::class, 'area_id'); }
+    public function parish() { return $this->belongsTo(Parish::class, 'parish_id'); }
+}

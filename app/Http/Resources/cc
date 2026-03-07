@@ -1,0 +1,415 @@
+<?php
+
+// ============================================================
+// API RESOURCES — place each class in its own file under
+// app/Http/Resources/
+// Usage: return new XxxResource($model);
+//        return XxxResource::collection($collection);
+// ============================================================
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+
+// ──────────────────────────────────────────
+// app/Http/Resources/ProvinceResource.php
+// ──────────────────────────────────────────
+class ProvinceResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'        => $this->id,
+            'name'      => $this->name,
+            'status'    => $this->status,
+            'createdAt' => $this->created_at,
+            'updatedAt' => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/RoleResource.php
+// ──────────────────────────────────────────
+class RoleResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'           => $this->id,
+            'name'         => $this->name,
+            'description'  => $this->description,
+            'isDefault'    => $this->is_default,
+            'isSuperAdmin' => $this->is_super_admin,
+            'createdAt'    => $this->created_at,
+            'updatedAt'    => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/ZoneResource.php
+// ──────────────────────────────────────────
+class ZoneResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'        => $this->id,
+            'name'      => $this->name,
+            'status'    => $this->status,
+            'areas'     => AreaResource::collection($this->whenLoaded('areas')),
+            'createdAt' => $this->created_at,
+            'updatedAt' => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/AreaResource.php
+// ──────────────────────────────────────────
+class AreaResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'        => $this->id,
+            'zoneId'    => $this->zone_id,
+            'name'      => $this->name,
+            'status'    => $this->status,
+            'zone'      => new ZoneResource($this->whenLoaded('zone')),
+            'parishes'  => ParishResource::collection($this->whenLoaded('parishes')),
+            'createdAt' => $this->created_at,
+            'updatedAt' => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/ParishResource.php
+// ──────────────────────────────────────────
+class ParishResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'        => $this->id,
+            'areaId'    => $this->area_id,
+            'name'      => $this->name,
+            'status'    => $this->status,
+            'area'      => new AreaResource($this->whenLoaded('area')),
+            'createdAt' => $this->created_at,
+            'updatedAt' => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/DepartmentResource.php
+// ──────────────────────────────────────────
+class DepartmentResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'        => $this->id,
+            'name'      => $this->name,
+            'status'    => $this->status,
+            'createdAt' => $this->created_at,
+            'updatedAt' => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/PositionResource.php
+// ──────────────────────────────────────────
+class PositionResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'        => $this->id,
+            'name'      => $this->name,
+            'level'     => $this->level,
+            'status'    => $this->status,
+            'createdAt' => $this->created_at,
+            'updatedAt' => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/UserResource.php
+// ──────────────────────────────────────────
+class UserResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'                           => $this->id,
+            'name'                         => $this->name,
+            'email'                        => $this->email,
+            'emailVerifiedAt'              => $this->email_verified_at,
+            'deactivatedAt'                => $this->deactivated_at,
+            'emailVerificationOtp'         => $this->email_verification_otp,
+            'emailVerificationOtpExpireIn' => $this->email_verification_otp_expire_in,
+            'passwordResetOtp'             => $this->password_reset_otp,
+            'passwordResetOtpExpireIn'     => $this->password_reset_otp_expire_in,
+            'roleId'                       => $this->role_id,
+            'role'                         => new RoleResource($this->whenLoaded('role')),
+            'isAdmin'                      => $this->is_admin,
+            'isSuperAdmin'                 => $this->is_super_admin,
+            'phoneNumber'                  => $this->phone_number,
+            'address'                      => $this->address,
+            'education'                    => $this->education,
+            'dateOfBirth'                  => $this->date_of_birth,
+            'gender'                       => $this->gender,
+            'occupation'                   => $this->occupation,
+            'createdAt'                    => $this->created_at,
+            'updatedAt'                    => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/MemberResource.php
+// ──────────────────────────────────────────
+class MemberResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'                 => $this->id,
+            'userId'             => $this->user_id,
+            'user'               => new UserResource($this->whenLoaded('user')),
+            'zoneId'             => $this->zone_id,
+            'zone'               => new ZoneResource($this->whenLoaded('zone')),
+            'zonePositionId'     => $this->zone_position_id,
+            'zonePosition'       => new PositionResource($this->whenLoaded('zonePosition')),
+            'areaId'             => $this->area_id,
+            'area'               => new AreaResource($this->whenLoaded('area')),
+            'areaPositionId'     => $this->area_position_id,
+            'areaPosition'       => new PositionResource($this->whenLoaded('areaPosition')),
+            'provinceId'         => $this->province_id,
+            'province'           => new ProvinceResource($this->whenLoaded('province')),
+            'provincePositionId' => $this->province_position_id,
+            'provincePosition'   => new PositionResource($this->whenLoaded('provincePosition')),
+            'parishId'           => $this->parish_id,
+            'parish'             => new ParishResource($this->whenLoaded('parish')),
+            'parishPositionId'   => $this->parish_position_id,
+            'parishPosition'     => new PositionResource($this->whenLoaded('parishPosition')),
+            'departmentId'       => $this->department_id,
+            'department'         => new DepartmentResource($this->whenLoaded('department')),
+            'createdAt'          => $this->created_at,
+            'updatedAt'          => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/ModuleResource.php
+// ──────────────────────────────────────────
+class ModuleResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'         => $this->id,
+            'name'       => $this->name,
+            'slug'       => $this->slug,
+            'privileges' => ModulePrivilegeResource::collection($this->whenLoaded('privileges')),
+            'createdAt'  => $this->created_at,
+            'updatedAt'  => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/ModulePrivilegeResource.php
+// ──────────────────────────────────────────
+class ModulePrivilegeResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'        => $this->id,
+            'moduleId'  => $this->module_id,
+            'module'    => new ModuleResource($this->whenLoaded('module')),
+            'name'      => $this->name,
+            'slug'      => $this->slug,
+            'createdAt' => $this->created_at,
+            'updatedAt' => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/RolePrivilegeResource.php
+// ──────────────────────────────────────────
+class RolePrivilegeResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'          => $this->id,
+            'roleId'      => $this->role_id,
+            'privilegeId' => $this->privilege_id,
+            'privilege'   => new ModulePrivilegeResource($this->whenLoaded('privilege')),
+            'createdAt'   => $this->created_at,
+            'updatedAt'   => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/PositionPrivilegeResource.php
+// ──────────────────────────────────────────
+class PositionPrivilegeResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'          => $this->id,
+            'positionId'  => $this->position_id,
+            'privilegeId' => $this->privilege_id,
+            'privilege'   => new ModulePrivilegeResource($this->whenLoaded('privilege')),
+            'createdAt'   => $this->created_at,
+            'updatedAt'   => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/PermissionResource.php
+// ──────────────────────────────────────────
+class PermissionResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'        => $this->id,
+            'name'      => $this->name,
+            'slug'      => $this->slug,
+            'level'     => $this->level, // already cast to array
+            'module'    => $this->module,
+            'createdAt' => $this->created_at,
+            'updatedAt' => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/RolePermissionResource.php
+// ──────────────────────────────────────────
+class RolePermissionResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'           => $this->id,
+            'roleId'       => $this->role_id,
+            'permissionId' => $this->permission_id,
+            'role'         => new RoleResource($this->whenLoaded('role')),
+            'permission'   => new PermissionResource($this->whenLoaded('permission')),
+            'createdAt'    => $this->created_at,
+            'updatedAt'    => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/TransactionResource.php
+// ──────────────────────────────────────────
+class TransactionResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'            => $this->id,
+            'userId'        => $this->user_id,
+            'user'          => new UserResource($this->whenLoaded('user')),
+            'amount'        => $this->amount,
+            'status'        => $this->status,
+            'paymentMethod' => $this->payment_method,
+            'reference'     => $this->reference,
+            'createdAt'     => $this->created_at,
+            'updatedAt'     => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/EmailVerificationResource.php
+// ──────────────────────────────────────────
+class EmailVerificationResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'           => $this->id,
+            'userId'       => $this->user_id,
+            'otp'          => $this->otp,
+            'otpExpiresAt' => $this->otp_expires_at,
+            'expiredAt'    => $this->expired_at,
+            'createdAt'    => $this->created_at,
+            'updatedAt'    => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/EventResource.php
+// ──────────────────────────────────────────
+class EventResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'               => $this->id,
+            'title'            => $this->title,
+            'description'      => $this->description,
+            'type'             => $this->type,
+            'parentId'         => $this->parent_id,
+            'startDate'        => $this->start_date,
+            'endDate'          => $this->end_date,
+            'startTime'        => $this->start_time,
+            'registrationFee'  => $this->registration_fee,
+            'location'         => $this->location,
+            'participants'     => EventParticipantResource::collection($this->whenLoaded('participants')),
+            'createdAt'        => $this->created_at,
+            'updatedAt'        => $this->updated_at,
+        ];
+    }
+}
+
+// ──────────────────────────────────────────
+// app/Http/Resources/EventParticipantResource.php
+// ──────────────────────────────────────────
+class EventParticipantResource extends JsonResource
+{
+    public function toArray(Request $request): array
+    {
+        return [
+            'id'                   => $this->id,
+            'eventId'              => $this->event_id,
+            'name'                 => $this->name,
+            'phoneNumber'          => $this->phone_number,
+            'zoneId'               => $this->zone_id,
+            'zone'                 => new ZoneResource($this->whenLoaded('zone')),
+            'areaId'               => $this->area_id,
+            'area'                 => new AreaResource($this->whenLoaded('area')),
+            'parishId'             => $this->parish_id,
+            'parish'               => new ParishResource($this->whenLoaded('parish')),
+            'attended'             => $this->attended,
+            'registrationApproved' => $this->registration_approved,
+            'location'             => $this->location,
+            'registrationNumber'   => $this->registration_number,
+            'gender'               => $this->gender,
+            'email'                => $this->email,
+            'createdAt'            => $this->created_at,
+            'updatedAt'            => $this->updated_at,
+        ];
+    }
+}
