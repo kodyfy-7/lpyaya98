@@ -4,6 +4,7 @@ use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\ZoneController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,18 +26,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/update-password', [PasswordController::class, 'updatePassword']);
 });
 
-Route::middleware(['auth:sanctum'/* 'is_admin' */])->prefix('admin/events')->group(function () {
+Route::middleware(['auth:sanctum'/* , 'is_admin' */])->prefix('admin')->group(function () {
 
-    Route::get('/summary', [EventController::class, 'eventsSummary']);
-    Route::get('/', [EventController::class, 'listEvents']);
-    Route::post('/', [EventController::class, 'createEvent']);
-    Route::patch('/{eventId}', [EventController::class, 'updateEvent']);
+    Route::prefix('events')->group(function () {
+        Route::get('/summary', [EventController::class, 'eventsSummary']);
+        Route::get('/', [EventController::class, 'listEvents']);
+        Route::post('/', [EventController::class, 'createEvent']);
+        Route::patch('/{eventId}', [EventController::class, 'updateEvent']);
 
-    // Participants
-    Route::prefix('/{eventId}/participants')->group(function () {
-        Route::get('/', [EventController::class, 'eventParticipants']);
-        Route::get('/charts', [EventController::class, 'eventParticipantCounts']);
-        Route::post('/{eventParticipantId}', [EventController::class, 'updateEventParticipantAttendance']);
+        Route::prefix('{eventId}/participants')->group(function () {
+            Route::get('/', [EventController::class, 'eventParticipants']);
+            Route::get('/charts', [EventController::class, 'eventParticipantCounts']);
+            Route::post('/{eventParticipantId}', [EventController::class, 'updateEventParticipantAttendance']);
+        });
+    });
+
+    Route::prefix('zones')->group(function () {
+        Route::get('/', [ZoneController::class, 'getAllZones']);
+        Route::post('/', [ZoneController::class, 'createAZone']);
+        Route::patch('/{zoneId}', [ZoneController::class, 'updateAZone']);
     });
 
 });
