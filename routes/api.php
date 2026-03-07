@@ -25,9 +25,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/update-password', [PasswordController::class, 'updatePassword']);
 });
 
-// ──────────────────────────────────────────
-// Admin (authenticated + is_admin)
-// ──────────────────────────────────────────
 Route::middleware(['auth:sanctum'/* 'is_admin' */])->prefix('admin/events')->group(function () {
 
     Route::get('/summary', [EventController::class, 'eventsSummary']);
@@ -38,8 +35,8 @@ Route::middleware(['auth:sanctum'/* 'is_admin' */])->prefix('admin/events')->gro
     // Participants
     Route::prefix('/{eventId}/participants')->group(function () {
         Route::get('/', [EventController::class, 'eventParticipants']);
-        Route::get('/counts', [EventController::class, 'eventParticipantCounts']);
-        Route::patch('/{eventParticipantId}/attendance', [EventController::class, 'updateEventParticipantAttendance']);
+        Route::get('/charts', [EventController::class, 'eventParticipantCounts']);
+        Route::post('/{eventParticipantId}', [EventController::class, 'updateEventParticipantAttendance']);
     });
 
 });

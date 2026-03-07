@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateEventRequest;
 use App\Http\Requests\RegisterForEventRequest;
+use App\Http\Requests\UpdateEventRequest;
 use App\Http\Resources\EventParticipantResource;
 use App\Http\Resources\EventResource;
 use App\Models\Area;
@@ -18,9 +20,6 @@ class EventController extends Controller
 {
     // public function __construct(protected MailService $mailService) {}
 
-    // ──────────────────────────────────────────
-    // GET /api/events/{eventId}
-    // ──────────────────────────────────────────
     public function listAnEvent(string $eventId)
     {
         $event = Event::find($eventId);
@@ -177,9 +176,6 @@ class EventController extends Controller
         }
     }
 
-    // ──────────────────────────────────────────
-    // PATCH /api/events/{eventId}/participants/{eventParticipantId}/attendance
-    // ──────────────────────────────────────────
     public function updateEventParticipantAttendance(Request $request, string $eventId, string $eventParticipantId)
     {
         try {
@@ -216,9 +212,6 @@ class EventController extends Controller
         }
     }
 
-    // ──────────────────────────────────────────
-    // GET /api/events/{eventId}/participants/counts?by=zone|area
-    // ──────────────────────────────────────────
     public function eventParticipantCounts(Request $request, string $eventId)
     {
         try {
@@ -261,9 +254,6 @@ class EventController extends Controller
         }
     }
 
-    // ──────────────────────────────────────────
-    // GET /api/admin/events
-    // ──────────────────────────────────────────
     public function listEvents(Request $request)
     {
         try {
@@ -277,10 +267,13 @@ class EventController extends Controller
             $query = Event::select('events.*')
                 ->selectRaw('COUNT(DISTINCT participants.id) as "registeredCount"')
                 ->selectRaw('SUM(CASE WHEN participants."attended" = true THEN 1 ELSE 0 END) as "attendedCount"')
-                ->leftJoin('event_participants as participants', function ($join) {
-                    $join->on('participants."eventId"', '=', 'events.id')
-                        ->whereNull('participants."deletedAt"');
-                })
+                ->leftJoin(
+                    DB::raw('"event_participants" as participants'),
+                    function ($join) {
+                        $join->on(DB::raw('participants."eventId"'), '=', DB::raw('"events"."id"'))
+                            ->whereNull(DB::raw('participants."deletedAt"'));
+                    }
+                )
                 ->groupBy('events.id');
 
             if ($search) {
@@ -337,9 +330,6 @@ class EventController extends Controller
         }
     }
 
-    // ──────────────────────────────────────────
-    // GET /api/admin/events/summary
-    // ──────────────────────────────────────────
     public function eventsSummary()
     {
         try {
@@ -362,9 +352,6 @@ class EventController extends Controller
         }
     }
 
-    // ──────────────────────────────────────────
-    // POST /api/admin/events
-    // ──────────────────────────────────────────
     public function createEvent(CreateEventRequest $request)
     {
         try {
@@ -390,9 +377,6 @@ class EventController extends Controller
         }
     }
 
-    // ──────────────────────────────────────────
-    // PATCH /api/admin/events/{eventId}
-    // ──────────────────────────────────────────
     public function updateEvent(UpdateEventRequest $request, string $eventId)
     {
         try {
@@ -420,4 +404,40 @@ class EventController extends Controller
             return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
         }
     }
+
+    // public function updateEventParticipantAttendance(Request $request, string $eventId, string $eventParticipantId)
+    // {
+    //     try {
+    //         $request->validate(['isAttended' => 'required|boolean']);
+
+    //         $event = Event::select('id', 'title', 'registrationFee')->find($eventId);
+
+    //         if (! $event) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Event not found.',
+    //             ], 404);
+    //         }
+
+    //         $participant = EventParticipant::where('eventId', $eventId)
+    //             ->where('id', $eventParticipantId)
+    //             ->first();
+
+    //         if (! $participant) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'message' => 'Participant not found.',
+    //             ], 400);
+    //         }
+
+    //         $participant->update(['attended' => $request->isAttended]);
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Event participant updated successfully',
+    //         ]);
+    //     } catch (\Throwable $e) {
+    //         return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    //     }
+    // }
 }
