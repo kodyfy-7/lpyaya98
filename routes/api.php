@@ -1,10 +1,15 @@
 <?php
 
 use App\Http\Controllers\ApiController;
+use App\Http\Controllers\AreaController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\ParishController;
 use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\PositionController;
+use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\ZoneController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -57,6 +62,36 @@ Route::middleware(['auth:sanctum'/* , 'is_admin' */])->prefix('admin')->group(fu
         Route::patch('/{memberId}/status/{status}', [MemberController::class, 'updateMemberStatus']);
     });
 
+    Route::prefix('areas')->group(function () {
+        Route::get('/', [AreaController::class, 'getAllAreas']);
+        Route::post('/', [AreaController::class, 'createAArea']);
+        Route::patch('/{areaId}', [AreaController::class, 'updateAArea']);
+    });
+
+    Route::prefix('departments')->group(function () {
+        Route::get('/', [DepartmentController::class, 'getAllDepartments']);
+        Route::post('/', [DepartmentController::class, 'createADepartment']);
+        Route::patch('/{departmentId}', [DepartmentController::class, 'updateADepartment']);
+    });
+
+    Route::prefix('parishes')->group(function () {
+        Route::get('/', [ParishController::class, 'getAllParishes']);
+        Route::post('/', [ParishController::class, 'createAParish']);
+        Route::post('/upload', [ParishController::class, 'uploadParishes']);
+        Route::patch('/{parishId}', [ParishController::class, 'updateAParish']);
+    });
+
+    Route::prefix('provinces')->group(function () {
+        Route::get('/', [ProvinceController::class, 'getAllProvinces']);
+        Route::post('/', [ProvinceController::class, 'createAProvince']);
+        Route::patch('/{provinceId}', [ProvinceController::class, 'updateAProvince']);
+    });
+
+    Route::prefix('positions')->group(function () {
+        Route::get('/', [PositionController::class, 'getAllPositions']);
+        Route::post('/', [PositionController::class, 'createAPosition']);
+        Route::patch('/{positionId}', [PositionController::class, 'updateAPosition']);
+    });
 });
 // admin group
 

@@ -12,10 +12,25 @@ class PositionResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'level' => $this->level,
             'status' => $this->status,
-            'createdAt' => $this->created_at,
-            'updatedAt' => $this->updated_at,
+            'level' => $this->level,
+            'positionPrivileges' => $this->whenLoaded('positionPrivileges', function () {
+                return $this->positionPrivileges->map(fn ($pp) => [
+                    'id' => $pp->id,
+                    'privilege' => $pp->privilege ? [
+                        'id' => $pp->privilege->id,
+                        'name' => $pp->privilege->name,
+                        'slug' => $pp->privilege->slug,
+                        'module' => $pp->privilege->module ? [
+                            'id' => $pp->privilege->module->id,
+                            'name' => $pp->privilege->module->name,
+                            'slug' => $pp->privilege->module->slug,
+                        ] : null,
+                    ] : null,
+                ]);
+            }),
+            'createdAt' => $this->createdAt,
+            'updatedAt' => $this->updatedAt,
         ];
     }
 }

@@ -15,8 +15,13 @@ class Position extends Model
 
     protected $fillable = ['name', 'level', 'status'];
 
-    public function privileges()
+    // public function privileges()
+    // {
+    //     return $this->hasMany(PositionPrivilege::class, 'position_id');
+    // }
+
+    public function positionPrivileges()
     {
-        return $this->hasMany(PositionPrivilege::class, 'position_id');
+        return $this->hasMany(PositionPrivilege::class, 'positionId');
     }
 }

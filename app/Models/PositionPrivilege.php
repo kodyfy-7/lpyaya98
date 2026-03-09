@@ -22,6 +22,6 @@ class PositionPrivilege extends Model
 
     public function privilege()
     {
-        return $this->belongsTo(ModulePrivilege::class, 'privilege_id');
+        return $this->belongsTo(ModulePrivilege::class, 'privilegeId');
     }
 }
