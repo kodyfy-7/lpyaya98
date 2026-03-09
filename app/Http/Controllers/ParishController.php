@@ -16,10 +16,10 @@ class ParishController extends Controller
     public function getAllParishes(Request $request)
     {
         try {
-            $page    = (int) $request->query('page', 1);
+            $page = (int) $request->query('page', 1);
             $perPage = (int) $request->query('perPage', 25);
-            $search  = $request->query('search');
-            $sort    = $request->query('sort', 'createdAt:desc');
+            $search = $request->query('search');
+            $sort = $request->query('sort', 'createdAt:desc');
 
             [$sortColumn, $sortDirection] = array_pad(explode(':', $sort), 2, 'desc');
 
@@ -29,9 +29,9 @@ class ParishController extends Controller
                 $query->where('name', 'ilike', "%{$search}%");
             }
 
-            $total    = $query->count();
+            $total = $query->count();
             $parishes = $query->orderBy($sortColumn, $sortDirection)
-                              ->paginate($perPage, ['*'], 'page', $page);
+                ->paginate($perPage, ['*'], 'page', $page);
 
             if ($parishes->isEmpty()) {
                 return response()->json(['success' => true, 'data' => []]);
@@ -39,11 +39,11 @@ class ParishController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data'    => ParishResource::collection($parishes->items()),
-                'meta'    => [
-                    'total'      => $total,
-                    'page'       => $page,
-                    'perPage'    => $perPage,
+                'data' => ParishResource::collection($parishes->items()),
+                'meta' => [
+                    'total' => $total,
+                    'page' => $page,
+                    'perPage' => $perPage,
                     'totalPages' => $parishes->lastPage(),
                 ],
             ]);
@@ -59,14 +59,14 @@ class ParishController extends Controller
     {
         $request->validate([
             'areaId' => 'required|uuid',
-            'name'   => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'status' => 'nullable|in:active,inactive',
         ]);
 
         try {
             $area = Area::find($request->input('areaId'));
 
-            if (!$area) {
+            if (! $area) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Area does not exist',
@@ -86,14 +86,14 @@ class ParishController extends Controller
 
             $parish = Parish::create([
                 'areaId' => $request->input('areaId'),
-                'name'   => $request->input('name'),
+                'name' => $request->input('name'),
                 'status' => $request->input('status', 'active'),
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Parish created successfully.',
-                'data'    => new ParishResource($parish),
+                'data' => new ParishResource($parish),
             ], 201);
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
@@ -106,15 +106,15 @@ class ParishController extends Controller
     public function uploadParishes(Request $request)
     {
         $request->validate([
-            'areaId'         => 'required|uuid',
-            'parishes'       => 'required|array|min:1',
+            'areaId' => 'required|uuid',
+            'parishes' => 'required|array|min:1',
             'parishes.*.name' => 'required|string|max:255',
         ]);
 
         try {
             $area = Area::find($request->input('areaId'));
 
-            if (!$area) {
+            if (! $area) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Area does not exist',
@@ -127,10 +127,10 @@ class ParishController extends Controller
                         ->where('areaId', $request->input('areaId'))
                         ->exists();
 
-                    if (!$exists) {
+                    if (! $exists) {
                         Parish::create([
                             'areaId' => $request->input('areaId'),
-                            'name'   => $parishData['name'],
+                            'name' => $parishData['name'],
                             'status' => 'active',
                         ]);
                     }
@@ -153,14 +153,14 @@ class ParishController extends Controller
     {
         $request->validate([
             'areaId' => 'required|uuid',
-            'name'   => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'status' => 'nullable|in:active,inactive',
         ]);
 
         try {
             $area = Area::find($request->input('areaId'));
 
-            if (!$area) {
+            if (! $area) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Area not found.',
@@ -169,7 +169,7 @@ class ParishController extends Controller
 
             $parish = Parish::find($parishId);
 
-            if (!$parish) {
+            if (! $parish) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Parish does not exist.',
@@ -190,14 +190,14 @@ class ParishController extends Controller
 
             $parish->update([
                 'areaId' => $request->input('areaId'),
-                'name'   => $request->input('name'),
+                'name' => $request->input('name'),
                 'status' => $request->input('status'),
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Parish updated successfully.',
-                'data'    => new ParishResource($parish->fresh()),
+                'data' => new ParishResource($parish->fresh()),
             ]);
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);

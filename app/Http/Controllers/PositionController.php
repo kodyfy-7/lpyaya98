@@ -16,11 +16,11 @@ class PositionController extends Controller
     public function getAllPositions(Request $request)
     {
         try {
-            $page    = (int) $request->query('page', 1);
+            $page = (int) $request->query('page', 1);
             $perPage = (int) $request->query('perPage', 25);
-            $search  = $request->query('search');
-            $level   = $request->query('level');
-            $sort    = $request->query('sort', 'createdAt:desc');
+            $search = $request->query('search');
+            $level = $request->query('level');
+            $sort = $request->query('sort', 'createdAt:desc');
 
             [$sortColumn, $sortDirection] = array_pad(explode(':', $sort), 2, 'desc');
 
@@ -38,9 +38,9 @@ class PositionController extends Controller
                 $query->where('level', $level);
             }
 
-            $total     = $query->count();
+            $total = $query->count();
             $positions = $query->orderBy($sortColumn, $sortDirection)
-                               ->paginate($perPage, ['*'], 'page', $page);
+                ->paginate($perPage, ['*'], 'page', $page);
 
             if ($positions->isEmpty()) {
                 return response()->json(['success' => true, 'data' => []]);
@@ -48,11 +48,11 @@ class PositionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data'    => PositionResource::collection($positions->items()),
-                'meta'    => [
-                    'total'      => $total,
-                    'page'       => $page,
-                    'perPage'    => $perPage,
+                'data' => PositionResource::collection($positions->items()),
+                'meta' => [
+                    'total' => $total,
+                    'page' => $page,
+                    'perPage' => $perPage,
                     'totalPages' => $positions->lastPage(),
                 ],
             ]);
@@ -67,10 +67,10 @@ class PositionController extends Controller
     public function createAPosition(Request $request)
     {
         $request->validate([
-            'name'           => 'required|string|max:255',
-            'status'         => 'required|in:active,inactive',
-            'level'          => 'required|string',
-            'privilegeIds'   => 'nullable|array',
+            'name' => 'required|string|max:255',
+            'status' => 'required|in:active,inactive',
+            'level' => 'required|string',
+            'privilegeIds' => 'nullable|array',
             'privilegeIds.*' => 'uuid',
         ]);
 
@@ -86,14 +86,14 @@ class PositionController extends Controller
 
             $position = DB::transaction(function () use ($request) {
                 $position = Position::create([
-                    'name'   => $request->input('name'),
+                    'name' => $request->input('name'),
                     'status' => $request->input('status'),
-                    'level'  => $request->input('level'),
+                    'level' => $request->input('level'),
                 ]);
 
                 if ($request->filled('privilegeIds')) {
-                    $privileges = collect($request->input('privilegeIds'))->map(fn($privilegeId) => [
-                        'positionId'  => $position->id,
+                    $privileges = collect($request->input('privilegeIds'))->map(fn ($privilegeId) => [
+                        'positionId' => $position->id,
                         'privilegeId' => $privilegeId,
                     ])->toArray();
 
@@ -106,7 +106,7 @@ class PositionController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Position created successfully.',
-                'data'    => new PositionResource($position->load([
+                'data' => new PositionResource($position->load([
                     'positionPrivileges.privilege.module',
                 ])),
             ], 201);
@@ -114,7 +114,7 @@ class PositionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to create position',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -125,17 +125,17 @@ class PositionController extends Controller
     public function updateAPosition(Request $request, string $positionId)
     {
         $request->validate([
-            'name'           => 'sometimes|string|max:255',
-            'status'         => 'sometimes|in:active,inactive',
-            'level'          => 'sometimes|string',
-            'privilegeIds'   => 'nullable|array',
+            'name' => 'sometimes|string|max:255',
+            'status' => 'sometimes|in:active,inactive',
+            'level' => 'sometimes|string',
+            'privilegeIds' => 'nullable|array',
             'privilegeIds.*' => 'uuid',
         ]);
 
         try {
             $position = Position::find($positionId);
 
-            if (!$position) {
+            if (! $position) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Position does not exist',
@@ -158,9 +158,9 @@ class PositionController extends Controller
 
             DB::transaction(function () use ($request, $position, $positionId) {
                 $updatedData = array_filter([
-                    'name'   => $request->input('name'),
+                    'name' => $request->input('name'),
                     'status' => $request->input('status'),
-                    'level'  => $request->input('level'),
+                    'level' => $request->input('level'),
                 ]);
 
                 $position->update($updatedData);
@@ -169,8 +169,8 @@ class PositionController extends Controller
                 if ($request->filled('privilegeIds')) {
                     PositionPrivilege::where('positionId', $positionId)->delete();
 
-                    $privileges = collect($request->input('privilegeIds'))->map(fn($privilegeId) => [
-                        'positionId'  => $positionId,
+                    $privileges = collect($request->input('privilegeIds'))->map(fn ($privilegeId) => [
+                        'positionId' => $positionId,
                         'privilegeId' => $privilegeId,
                     ])->toArray();
 
@@ -181,7 +181,7 @@ class PositionController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Position updated successfully.',
-                'data'    => new PositionResource($position->fresh()->load([
+                'data' => new PositionResource($position->fresh()->load([
                     'positionPrivileges.privilege.module',
                 ])),
             ]);
@@ -189,7 +189,7 @@ class PositionController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update position',
-                'error'   => $e->getMessage(),
+                'error' => $e->getMessage(),
             ], 500);
         }
     }

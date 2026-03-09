@@ -14,10 +14,10 @@ class DepartmentController extends Controller
     public function getAllDepartments(Request $request)
     {
         try {
-            $page    = (int) $request->query('page', 1);
+            $page = (int) $request->query('page', 1);
             $perPage = (int) $request->query('perPage', 25);
-            $search  = $request->query('search');
-            $sort    = $request->query('sort', 'createdAt:desc');
+            $search = $request->query('search');
+            $sort = $request->query('sort', 'createdAt:desc');
 
             [$sortColumn, $sortDirection] = array_pad(explode(':', $sort), 2, 'desc');
 
@@ -27,9 +27,9 @@ class DepartmentController extends Controller
                 $query->where('name', 'ilike', "%{$search}%");
             }
 
-            $total       = $query->count();
+            $total = $query->count();
             $departments = $query->orderBy($sortColumn, $sortDirection)
-                                 ->paginate($perPage, ['*'], 'page', $page);
+                ->paginate($perPage, ['*'], 'page', $page);
 
             if ($departments->isEmpty()) {
                 return response()->json(['success' => true, 'data' => []]);
@@ -37,11 +37,11 @@ class DepartmentController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data'    => DepartmentResource::collection($departments->items()),
-                'meta'    => [
-                    'total'      => $total,
-                    'page'       => $page,
-                    'perPage'    => $perPage,
+                'data' => DepartmentResource::collection($departments->items()),
+                'meta' => [
+                    'total' => $total,
+                    'page' => $page,
+                    'perPage' => $perPage,
                     'totalPages' => $departments->lastPage(),
                 ],
             ]);
@@ -56,7 +56,7 @@ class DepartmentController extends Controller
     public function createADepartment(Request $request)
     {
         $request->validate([
-            'name'   => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'status' => 'nullable|in:active,inactive',
         ]);
 
@@ -71,14 +71,14 @@ class DepartmentController extends Controller
             }
 
             $department = Department::create([
-                'name'   => $request->input('name'),
+                'name' => $request->input('name'),
                 'status' => $request->input('status', 'active'),
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Department created successfully.',
-                'data'    => new DepartmentResource($department),
+                'data' => new DepartmentResource($department),
             ], 201);
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
@@ -91,14 +91,14 @@ class DepartmentController extends Controller
     public function updateADepartment(Request $request, string $departmentId)
     {
         $request->validate([
-            'name'   => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'status' => 'nullable|in:active,inactive',
         ]);
 
         try {
             $department = Department::find($departmentId);
 
-            if (!$department) {
+            if (! $department) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Department does not exist',
@@ -117,14 +117,14 @@ class DepartmentController extends Controller
             }
 
             $department->update([
-                'name'   => $request->input('name'),
+                'name' => $request->input('name'),
                 'status' => $request->input('status'),
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Department updated successfully.',
-                'data'    => new DepartmentResource($department->fresh()),
+                'data' => new DepartmentResource($department->fresh()),
             ]);
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);

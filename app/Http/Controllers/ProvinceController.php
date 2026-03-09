@@ -14,10 +14,10 @@ class ProvinceController extends Controller
     public function getAllProvinces(Request $request)
     {
         try {
-            $page    = (int) $request->query('page', 1);
+            $page = (int) $request->query('page', 1);
             $perPage = (int) $request->query('perPage', 25);
-            $search  = $request->query('search');
-            $sort    = $request->query('sort', 'createdAt:desc');
+            $search = $request->query('search');
+            $sort = $request->query('sort', 'createdAt:desc');
 
             [$sortColumn, $sortDirection] = array_pad(explode(':', $sort), 2, 'desc');
 
@@ -27,9 +27,9 @@ class ProvinceController extends Controller
                 $query->where('name', 'ilike', "%{$search}%");
             }
 
-            $total     = $query->count();
+            $total = $query->count();
             $provinces = $query->orderBy($sortColumn, $sortDirection)
-                               ->paginate($perPage, ['*'], 'page', $page);
+                ->paginate($perPage, ['*'], 'page', $page);
 
             if ($provinces->isEmpty()) {
                 return response()->json(['success' => true, 'data' => []]);
@@ -37,11 +37,11 @@ class ProvinceController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data'    => ProvinceResource::collection($provinces->items()),
-                'meta'    => [
-                    'total'      => $total,
-                    'page'       => $page,
-                    'perPage'    => $perPage,
+                'data' => ProvinceResource::collection($provinces->items()),
+                'meta' => [
+                    'total' => $total,
+                    'page' => $page,
+                    'perPage' => $perPage,
                     'totalPages' => $provinces->lastPage(),
                 ],
             ]);
@@ -56,7 +56,7 @@ class ProvinceController extends Controller
     public function createAProvince(Request $request)
     {
         $request->validate([
-            'name'   => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'status' => 'nullable|in:active,inactive',
         ]);
 
@@ -71,14 +71,14 @@ class ProvinceController extends Controller
             }
 
             $province = Province::create([
-                'name'   => $request->input('name'),
+                'name' => $request->input('name'),
                 'status' => $request->input('status', 'active'),
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Province created successfully.',
-                'data'    => new ProvinceResource($province),
+                'data' => new ProvinceResource($province),
             ], 201);
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
@@ -91,14 +91,14 @@ class ProvinceController extends Controller
     public function updateAProvince(Request $request, string $provinceId)
     {
         $request->validate([
-            'name'   => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'status' => 'nullable|in:active,inactive',
         ]);
 
         try {
             $province = Province::find($provinceId);
 
-            if (!$province) {
+            if (! $province) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Province not found.',
@@ -117,14 +117,14 @@ class ProvinceController extends Controller
             }
 
             $province->update([
-                'name'   => $request->input('name'),
+                'name' => $request->input('name'),
                 'status' => $request->input('status'),
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Province updated successfully.',
-                'data'    => new ProvinceResource($province->fresh()),
+                'data' => new ProvinceResource($province->fresh()),
             ]);
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);

@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\AdminRegistrationNotificationMail;
+use App\Mail\WelcomeMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -127,6 +131,28 @@ class AuthController extends Controller
             ]);
 
             DB::commit();
+
+            $userName = $user->name;
+            $userEmail = $user->email;
+            $adminEmail = config('mail.admin_email', config('mail.from.address'));
+
+            app()->terminating(function () use ($userName, $userEmail, $adminEmail) {
+                // Welcome mail to new user
+                try {
+                    Mail::to($userEmail)->send(new WelcomeMail(name: $userName));
+                } catch (\Throwable $e) {
+                    Log::error('Welcome mail failed: '.$e->getMessage());
+                }
+
+                // Notify admin of new registration
+                try {
+                    Mail::to($adminEmail)->send(new AdminRegistrationNotificationMail(
+                        user: ['name' => $userName, 'email' => $userEmail]
+                    ));
+                } catch (\Throwable $e) {
+                    Log::error('Admin registration notification mail failed: '.$e->getMessage());
+                }
+            });
 
             return response()->json([
                 'success' => true,

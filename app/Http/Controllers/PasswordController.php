@@ -2,17 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\ForgotPasswordRequested;
-use App\Events\VerificationOtpResent;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResendVerificationOtpRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Requests\VerifyEmailRequest;
+use App\Mail\ForgotPasswordMail;
+use App\Mail\ResendVerificationOtpMail;
 use App\Models\EmailVerification;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class PasswordController extends Controller
 {
@@ -39,9 +41,20 @@ class PasswordController extends Controller
             ]);
 
             $verificationLink = "{$request->input('baseUrl')}?otp={$otp}&email={$user->email}";
+            $userName = $user->name;
+            $userEmail = $user->email;
 
-            // app()->terminating(fn () => ForgotPasswordRequested::dispatch($user->email, $verificationLink)
-            // );
+            app()->terminating(function () use ($userName, $userEmail, $verificationLink) {
+                try {
+                    Mail::to($userEmail)->send(new ForgotPasswordMail(
+                        name: $userName,
+                        email: $userEmail,
+                        resetUrl: $verificationLink,
+                    ));
+                } catch (\Throwable $e) {
+                    Log::error('Forgot password mail failed: '.$e->getMessage());
+                }
+            });
 
             return response()->json([
                 'success' => true,
@@ -145,9 +158,18 @@ class PasswordController extends Controller
             ]);
 
             $verificationLink = "{$request->input('baseUrl')}?email={$request->input('email')}&otp={$otp}";
+            $userEmail = $user->email;
 
-            // app()->terminating(fn () => VerificationOtpResent::dispatch($user->email, $verificationLink)
-            // );
+            app()->terminating(function () use ($userEmail, $verificationLink) {
+                try {
+                    Mail::to($userEmail)->send(new ResendVerificationOtpMail(
+                        email: $userEmail,
+                        verificationLink: $verificationLink,
+                    ));
+                } catch (\Throwable $e) {
+                    Log::error('Resend verification OTP mail failed: '.$e->getMessage());
+                }
+            });
 
             return response()->json([
                 'success' => true,

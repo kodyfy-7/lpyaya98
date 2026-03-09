@@ -7,6 +7,7 @@ use App\Http\Requests\RegisterForEventRequest;
 use App\Http\Requests\UpdateEventRequest;
 use App\Http\Resources\EventParticipantResource;
 use App\Http\Resources\EventResource;
+use App\Mail\EventRegistrationMail;
 use App\Models\Area;
 // use App\Services\MailService;
 use App\Models\Event;
@@ -15,6 +16,8 @@ use App\Models\Parish;
 use App\Models\Zone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class EventController extends Controller
 {
@@ -91,6 +94,40 @@ class EventController extends Controller
             ]);
 
             DB::commit();
+
+            $eventDetails = [
+                'name' => $event->title,
+                'date' => $event->startDate,
+                'time' => $event->startTime,
+                'location' => $event->location,
+            ];
+            $participantName = $participant->name;
+            $participantEmail = $participant->email;
+            $registrationNumber = $participant->registrationNumber;
+
+            app()->terminating(function () use ($participantEmail, $participantName, $registrationNumber, $eventDetails) {
+                Mail::to($participantEmail)->send(new EventRegistrationMail(
+                    name: $participantName,
+                    regNumber: $registrationNumber,
+                    eventDetails: $eventDetails,
+                ));
+            });
+
+            // try {
+            //     Mail::to($participant->email)->send(new EventRegistrationMail(
+            //         name: $participant->name,
+            //         regNumber: $participant->registrationNumber,
+            //         eventDetails: [
+            //             'name' => $event->title,
+            //             'date' => $event->startDate,
+            //             'time' => $event->startTime,
+            //             'location' => $event->location,
+            //         ],
+            //     ));
+            // } catch (\Throwable $e) {
+            //     // Don't fail the request if mail fails — just log it
+            //     Log::error('Event registration mail failed: '.$e->getMessage());
+            // }
 
             return response()->json([
                 'success' => true,
