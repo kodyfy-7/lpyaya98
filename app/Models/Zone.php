@@ -2,12 +2,19 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Zone extends Model
 {
-    // use SoftDeletes;
+    use HasUuids, SoftDeletes;
+
+    const CREATED_AT = 'createdAt';
+
+    const UPDATED_AT = 'updatedAt';
+
+    const DELETED_AT = 'deletedAt';
 
     protected $keyType = 'string';
 
@@ -17,6 +24,6 @@ class Zone extends Model
 
     public function areas()
     {
-        return $this->hasMany(Area::class, 'zone_id');
+        return $this->hasMany(Area::class, 'zoneId'); // camelCase FK
     }
 }

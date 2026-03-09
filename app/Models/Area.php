@@ -2,26 +2,33 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Area extends Model
 {
-    // use SoftDeletes;
+    use HasUuids, SoftDeletes;
+
+    const CREATED_AT = 'createdAt';
+
+    const UPDATED_AT = 'updatedAt';
+
+    const DELETED_AT = 'deletedAt';
 
     protected $keyType = 'string';
 
     public $incrementing = false;
 
-    protected $fillable = ['zone_id', 'name', 'status'];
+    protected $fillable = ['zoneId', 'name', 'status'];
 
     public function zone()
     {
-        return $this->belongsTo(Zone::class, 'zone_id');
+        return $this->belongsTo(Zone::class, 'zoneId');
     }
 
     public function parishes()
     {
-        return $this->hasMany(Parish::class, 'area_id');
+        return $this->hasMany(Parish::class, 'areaId'); // camelCase FK
     }
 }

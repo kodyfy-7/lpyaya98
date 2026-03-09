@@ -11,12 +11,12 @@ class ParishResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'areaId' => $this->area_id,
+            'areaId' => $this->areaId,
             'name' => $this->name,
             'status' => $this->status,
             'area' => new AreaResource($this->whenLoaded('area')),
-            'createdAt' => $this->created_at,
-            'updatedAt' => $this->updated_at,
+            'createdAt' => $this->createdAt,
+            'updatedAt' => $this->updatedAt,
         ];
     }
 }

@@ -11,13 +11,13 @@ class AreaResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'zoneId' => $this->zone_id,
+            'zoneId' => $this->zoneId,  // camelCase
             'name' => $this->name,
             'status' => $this->status,
             'zone' => new ZoneResource($this->whenLoaded('zone')),
             'parishes' => ParishResource::collection($this->whenLoaded('parishes')),
-            'createdAt' => $this->created_at,
-            'updatedAt' => $this->updated_at,
+            'createdAt' => $this->createdAt,
+            'updatedAt' => $this->updatedAt,
         ];
     }
 }
