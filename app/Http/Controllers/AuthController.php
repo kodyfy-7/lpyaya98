@@ -2,13 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\RegistrationNotificationMail;
-use App\Mail\WelcomeMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 
 class AuthController extends Controller
 {
@@ -32,33 +29,19 @@ class AuthController extends Controller
             'member.province',
         ])->whereRaw('LOWER(email) = ?', [$email])->first();
 
-        if (! $user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid email address',
-            ], 400);
-        }
+        // ...
 
-        if (! Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid password',
-            ], 400);
-        }
-
-        if (! $user->is_super_admin && ! $user->email_verified_at) {
+        if (! $user->isSuperAdmin && ! $user->emailVerifiedAt) {
             if (! $user->member) {
-                $token = $this->generateToken($user->id, $user->member);
-
                 return response()->json([
                     'userId' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'emailVerifiedAt' => $user->email_verified_at,
+                    'emailVerifiedAt' => $user->emailVerifiedAt,
                     'role' => $user->role,
-                    'isSuperAdmin' => $user->is_super_admin,
+                    'isSuperAdmin' => $user->isSuperAdmin,
                     'membership' => $user->member,
-                    'token' => $token,
+                    'token' => $user->createToken('auth_token')->plainTextToken,
                 ]);
             }
 
@@ -68,24 +51,22 @@ class AuthController extends Controller
             ], 400);
         }
 
-        if ($user->deactivated_at) {
+        if ($user->deactivatedAt) {
             return response()->json([
                 'success' => false,
                 'message' => 'Your account is still under review. Please contact Special Duties Department for activation.',
             ], 400);
         }
 
-        $token = $this->generateToken($user->id, $user->member);
-
         return response()->json([
             'userId' => $user->id,
             'name' => $user->name,
             'email' => $user->email,
-            'emailVerifiedAt' => $user->email_verified_at,
+            'emailVerifiedAt' => $user->emailVerifiedAt,
             'role' => $user->role,
-            'isSuperAdmin' => $user->is_super_admin,
+            'isSuperAdmin' => $user->isSuperAdmin,
             'membership' => $user->member,
-            'token' => $token,
+            'token' => $user->createToken('auth_token')->plainTextToken,
         ]);
     }
 
@@ -97,7 +78,7 @@ class AuthController extends Controller
         $request->validate([
             'firstName' => 'required|string',
             'lastName' => 'required|string',
-            'dob' => 'required|date',
+            'dob' => 'nullable|date',
             'email' => 'required|email',
             'gender' => 'required|string',
             'password' => 'required|string|min:6',
@@ -120,8 +101,6 @@ class AuthController extends Controller
                     ], 400);
                 }
 
-                $token = $this->generateToken($existingUser->id);
-
                 return response()->json([
                     'success' => true,
                     'message' => 'Registration successful',
@@ -129,37 +108,25 @@ class AuthController extends Controller
                     'name' => $existingUser->name,
                     'email' => $existingUser->email,
                     'membership' => null,
-                    'token' => $token,
+                    'token' => $existingUser->createToken('auth_token')->plainTextToken,
                 ], 201);
             }
 
-            $hashedPassword = Hash::make($request->password);
-
             $user = User::create([
-                'name' => $request->firstName.' '.$request->lastName,
-                'date_of_birth' => $request->dob,
+                'name' => "{$request->firstName} {$request->lastName}",
+                'dateOfBirth' => $request->dob,
                 'email' => $request->email,
                 'gender' => $request->gender,
-                'password' => $hashedPassword,
-                'phone_number' => $request->phoneNumber,
+                'password' => Hash::make($request->password),
+                'phoneNumber' => $request->phoneNumber,
                 'education' => $request->education,
                 'occupation' => $request->occupation,
                 'address' => $request->address,
-                'is_admin' => true,
-                'role_id' => null,
-                'email_verified_at' => null,
+                'isAdmin' => true,
+                'roleId' => null,
             ]);
 
-            // Send welcome email
-            // Mail::to($user->email)->send(new WelcomeMail($user->name));
-
-            // Notify admin
-            $adminEmail = env('ADMIN_EMAIL', env('MAIL_USERNAME'));
-            // Mail::to($adminEmail)->send(new RegistrationNotificationMail($user));
-
             DB::commit();
-
-            $token = $this->generateToken($user->id);
 
             return response()->json([
                 'success' => true,
@@ -167,10 +134,10 @@ class AuthController extends Controller
                 'userId' => $user->id,
                 'name' => $user->name,
                 'email' => $user->email,
-                'token' => $token,
+                'token' => $user->createToken('auth_token')->plainTextToken,
             ], 201);
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
 
             return response()->json([

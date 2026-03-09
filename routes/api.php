@@ -3,6 +3,7 @@
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\MemberController;
 use App\Http\Controllers\PasswordController;
 use App\Http\Controllers\ZoneController;
 use Illuminate\Http\Request;
@@ -45,6 +46,15 @@ Route::middleware(['auth:sanctum'/* , 'is_admin' */])->prefix('admin')->group(fu
         Route::get('/', [ZoneController::class, 'getAllZones']);
         Route::post('/', [ZoneController::class, 'createAZone']);
         Route::patch('/{zoneId}', [ZoneController::class, 'updateAZone']);
+    });
+
+    Route::prefix('members')->group(function () {
+        Route::get('/summary', [MemberController::class, 'getAllMemberSummary']);
+        Route::get('/', [MemberController::class, 'getAllMembers']);
+        Route::post('/', [MemberController::class, 'addNewMembers']);
+        Route::patch('/membership', [MemberController::class, 'updateMembership']);
+        Route::patch('/{memberId}', [MemberController::class, 'updateMember']);
+        Route::patch('/{memberId}/status/{status}', [MemberController::class, 'updateMemberStatus']);
     });
 
 });
