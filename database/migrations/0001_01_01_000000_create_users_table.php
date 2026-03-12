@@ -8,29 +8,29 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->uuid('id')->primary();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password')->nullable();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->timestamp('deactivated_at')->nullable();
-            $table->integer('email_verification_otp')->nullable();
-            $table->timestamp('email_verification_otp_expire_in')->nullable();
-            $table->integer('password_reset_otp')->nullable();
-            $table->timestamp('password_reset_otp_expire_in')->nullable();
-            $table->uuid('role_id')->nullable();
-            $table->boolean('is_admin')->default(false);
-            $table->boolean('is_super_admin')->default(false);
-            $table->string('phone_number')->nullable();
-            $table->text('address')->nullable();
-            $table->string('education')->nullable();
-            $table->string('date_of_birth')->nullable();
-            $table->string('gender')->nullable();
-            $table->string('occupation')->nullable();
-            $table->timestamps();
-            $table->softDeletes(); // paranoid: true equivalent
-        });
+        // Schema::create('users', function (Blueprint $table) {
+        //     $table->uuid('id')->primary();
+        //     $table->string('name');
+        //     $table->string('email')->unique();
+        //     $table->string('password')->nullable();
+        //     $table->timestamp('email_verified_at')->nullable();
+        //     $table->timestamp('deactivated_at')->nullable();
+        //     $table->integer('email_verification_otp')->nullable();
+        //     $table->timestamp('email_verification_otp_expire_in')->nullable();
+        //     $table->integer('password_reset_otp')->nullable();
+        //     $table->timestamp('password_reset_otp_expire_in')->nullable();
+        //     $table->uuid('role_id')->nullable();
+        //     $table->boolean('is_admin')->default(false);
+        //     $table->boolean('is_super_admin')->default(false);
+        //     $table->string('phone_number')->nullable();
+        //     $table->text('address')->nullable();
+        //     $table->string('education')->nullable();
+        //     $table->string('date_of_birth')->nullable();
+        //     $table->string('gender')->nullable();
+        //     $table->string('occupation')->nullable();
+        //     $table->timestamps();
+        //     $table->softDeletes(); // paranoid: true equivalent
+        // });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
