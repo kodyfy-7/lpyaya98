@@ -302,19 +302,16 @@ class EventController extends Controller
             [$sortColumn, $sortDirection] = array_pad(explode(':', $sort), 2, 'desc');
 
             $query = Event::select('events.*')
-                ->selectRaw('COUNT(DISTINCT participants.id) as "registeredCount"')
-                ->selectRaw('SUM(CASE WHEN participants."attended" = true THEN 1 ELSE 0 END) as "attendedCount"')
-                ->leftJoin(
-                    DB::raw('"event_participants" as participants'),
-                    function ($join) {
-                        $join->on(DB::raw('participants."eventId"'), '=', DB::raw('"events"."id"'))
-                            ->whereNull(DB::raw('participants."deletedAt"'));
-                    }
-                )
+                ->selectRaw('COUNT(DISTINCT participants.id) as registeredCount')
+                ->selectRaw('SUM(CASE WHEN participants.attended = 1 THEN 1 ELSE 0 END) as attendedCount')
+                ->leftJoin('event_participants as participants', function ($join) {
+                    $join->on('participants.eventId', '=', 'events.id')
+                        ->whereNull('participants.deletedAt');
+                })
                 ->groupBy('events.id');
 
             if ($search) {
-                $query->where('events.title', 'ilike', "%{$search}%");
+                $query->where('events.title', 'like', "%{$search}%");
             }
 
             $events = $query->orderBy("events.{$sortColumn}", $sortDirection)

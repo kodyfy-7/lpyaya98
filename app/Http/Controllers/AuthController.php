@@ -33,7 +33,12 @@ class AuthController extends Controller
             'member.province',
         ])->whereRaw('LOWER(email) = ?', [$email])->first();
 
-        // ...
+        if (! $user || ! Hash::check($request->password, (string) $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid email or password.',
+            ], 401);
+        }
 
         if (! $user->isSuperAdmin && ! $user->emailVerifiedAt) {
             if (! $user->member) {
@@ -134,7 +139,7 @@ class AuthController extends Controller
 
             $userName = $user->name;
             $userEmail = $user->email;
-            $adminEmail = config('mail.admin_email', config('mail.from.address'));
+            $adminEmail = 'admin@lp98yaya.com.ng';
 
             app()->terminating(function () use ($userName, $userEmail, $adminEmail) {
                 // Welcome mail to new user
