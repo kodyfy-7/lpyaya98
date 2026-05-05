@@ -102,7 +102,7 @@ class MemberController extends Controller
             $isAdmin = $request->query('isAdmin');
 
             if ($isAdmin === 'true') {
-                $base = User::whereHas('members')->where('isAdmin', true);
+                $base = User::whereHas('member')->where('isAdmin', true);
 
                 return response()->json([
                     'success' => true,
@@ -115,7 +115,7 @@ class MemberController extends Controller
             }
 
             // Scoped to requesting user's member context
-            $member = $request->user()->members()->with(['parish', 'area', 'zone'])->first();
+            $member = $request->user()->member()->with(['parish', 'area', 'zone'])->first();
 
             $parishId = $member?->parish?->id;
             $areaId = $member?->area?->id;
@@ -151,7 +151,7 @@ class MemberController extends Controller
                 foreach ($request->members as $memberData) {
                     $email = strtolower($memberData['email']);
 
-                    $userExists = User::whereRaw('LOWER("email") = ?', [$email])->exists();
+                    $userExists = User::whereRaw('LOWER(email) = ?', [$email])->exists();
 
                     if ($userExists) {
                         $alreadyExists[] = $email;

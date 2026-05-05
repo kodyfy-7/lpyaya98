@@ -11,23 +11,23 @@ class EventParticipantResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'eventId' => $this->event_id,
+            'eventId' => $this->eventId,
             'name' => $this->name,
-            'phoneNumber' => $this->phone_number,
-            'zoneId' => $this->zone_id,
+            'phoneNumber' => $this->phoneNumber,
+            'zoneId' => $this->zoneId,
             'zone' => new ZoneResource($this->whenLoaded('zone')),
-            'areaId' => $this->area_id,
+            'areaId' => $this->areaId,
             'area' => new AreaResource($this->whenLoaded('area')),
-            'parishId' => $this->parish_id,
+            'parishId' => $this->parishId,
             'parish' => new ParishResource($this->whenLoaded('parish')),
             'attended' => $this->attended,
-            'registrationApproved' => $this->registration_approved,
+            'registrationApproved' => $this->registrationApproved,
             'location' => $this->location,
-            'registrationNumber' => $this->registration_number,
+            'registrationNumber' => $this->registrationNumber,
             'gender' => $this->gender,
             'email' => $this->email,
-            'createdAt' => $this->created_at,
-            'updatedAt' => $this->updated_at,
+            'createdAt' => $this->createdAt,
+            'updatedAt' => $this->updatedAt,
         ];
     }
 }

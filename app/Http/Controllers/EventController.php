@@ -263,12 +263,13 @@ class EventController extends Controller
 
             $aggregationField = $by === 'zone' ? 'zoneId' : 'areaId';
             $relatedTable = $by === 'zone' ? 'zones' : 'areas';
+            $nameAlias = $by.'Name';
 
             $counts = EventParticipant::select([
-                DB::raw("event_participants.\"{$aggregationField}\""),
-                DB::raw('COUNT(event_participants.id) as "totalRegistered"'),
-                DB::raw('SUM(CASE WHEN event_participants."attended" = true THEN 1 ELSE 0 END) as "totalAttended"'),
-                DB::raw("\"{$relatedTable}\".\"name\" as \"{$by}Name\""),
+                DB::raw("event_participants.`{$aggregationField}`"),
+                DB::raw('COUNT(event_participants.id) as totalRegistered'),
+                DB::raw('SUM(CASE WHEN event_participants.attended = 1 THEN 1 ELSE 0 END) as totalAttended'),
+                DB::raw("{$relatedTable}.name as {$nameAlias}"),
             ])
                 ->join($relatedTable, "event_participants.{$aggregationField}", '=', "{$relatedTable}.id")
                 ->where('event_participants.eventId', $eventId)
@@ -302,13 +303,18 @@ class EventController extends Controller
             [$sortColumn, $sortDirection] = array_pad(explode(':', $sort), 2, 'desc');
 
             $query = Event::select('events.*')
-                ->selectRaw('COUNT(DISTINCT participants.id) as registeredCount')
-                ->selectRaw('SUM(CASE WHEN participants.attended = 1 THEN 1 ELSE 0 END) as attendedCount')
-                ->leftJoin('event_participants as participants', function ($join) {
-                    $join->on('participants.eventId', '=', 'events.id')
+                ->selectSub(function ($subQuery) {
+                    $subQuery->from('event_participants as participants')
+                        ->selectRaw('COUNT(DISTINCT participants.id)')
+                        ->whereColumn('participants.eventId', 'events.id')
                         ->whereNull('participants.deletedAt');
-                })
-                ->groupBy('events.id');
+                }, 'registeredCount')
+                ->selectSub(function ($subQuery) {
+                    $subQuery->from('event_participants as participants')
+                        ->selectRaw('COALESCE(SUM(CASE WHEN participants.attended = 1 THEN 1 ELSE 0 END), 0)')
+                        ->whereColumn('participants.eventId', 'events.id')
+                        ->whereNull('participants.deletedAt');
+                }, 'attendedCount');
 
             if ($search) {
                 $query->where('events.title', 'like', "%{$search}%");
@@ -337,6 +343,7 @@ class EventController extends Controller
                     'id' => $event->id,
                     'title' => $event->title,
                     'type' => $event->type,
+                    'description' => $event->description,
                     'startDate' => $event->startDate,
                     'endDate' => $event->endDate,
                     'startTime' => $event->startTime,

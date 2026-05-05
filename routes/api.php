@@ -32,6 +32,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/auth/update-password', [PasswordController::class, 'updatePassword']);
 });
 
+Route::prefix('admin')->group(function () {
+    Route::get('/zones', [ZoneController::class, 'getAllZones']);
+    Route::get('/parishes', [ParishController::class, 'getAllParishes']);
+    Route::get('/areas', [AreaController::class, 'getAllAreas']);
+});
+
 Route::middleware(['auth:sanctum'/* , 'is_admin' */])->prefix('admin')->group(function () {
 
     Route::prefix('events')->group(function () {
@@ -48,7 +54,6 @@ Route::middleware(['auth:sanctum'/* , 'is_admin' */])->prefix('admin')->group(fu
     });
 
     Route::prefix('zones')->group(function () {
-        Route::get('/', [ZoneController::class, 'getAllZones']);
         Route::post('/', [ZoneController::class, 'createAZone']);
         Route::patch('/{zoneId}', [ZoneController::class, 'updateAZone']);
     });
@@ -63,7 +68,6 @@ Route::middleware(['auth:sanctum'/* , 'is_admin' */])->prefix('admin')->group(fu
     });
 
     Route::prefix('areas')->group(function () {
-        Route::get('/', [AreaController::class, 'getAllAreas']);
         Route::post('/', [AreaController::class, 'createAArea']);
         Route::patch('/{areaId}', [AreaController::class, 'updateAArea']);
     });
@@ -75,7 +79,6 @@ Route::middleware(['auth:sanctum'/* , 'is_admin' */])->prefix('admin')->group(fu
     });
 
     Route::prefix('parishes')->group(function () {
-        Route::get('/', [ParishController::class, 'getAllParishes']);
         Route::post('/', [ParishController::class, 'createAParish']);
         Route::post('/upload', [ParishController::class, 'uploadParishes']);
         Route::patch('/{parishId}', [ParishController::class, 'updateAParish']);

@@ -21,7 +21,9 @@ class PasswordController extends Controller
     public function forgotPassword(ForgotPasswordRequest $request)
     {
         try {
-            $user = User::whereRaw('LOWER("email") = ?', [strtolower($request->email)])
+            $email = strtolower(trim($request->email));
+
+            $user = User::whereRaw('LOWER(email) = ?', [$email])
                 ->select('id', 'name', 'email')
                 ->first();
 
@@ -72,7 +74,9 @@ class PasswordController extends Controller
     public function resetPassword(ResetPasswordRequest $request)
     {
         try {
-            $user = User::whereRaw('LOWER("email") = ?', [strtolower($request->email)])->first();
+            $email = strtolower(trim($request->email));
+
+            $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
 
             if (! $user) {
                 return response()->json([
@@ -131,7 +135,9 @@ class PasswordController extends Controller
     public function resendVerificationOtp(ResendVerificationOtpRequest $request)
     {
         try {
-            $user = User::whereRaw('LOWER("email") = ?', [strtolower($request->email)])
+            $email = strtolower(trim($request->email));
+
+            $user = User::whereRaw('LOWER(email) = ?', [$email])
                 ->select('id', 'email', 'emailVerifiedAt', 'name')
                 ->first();
 
