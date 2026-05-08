@@ -8,8 +8,10 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ParishController;
 use App\Http\Controllers\PasswordController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProvinceController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ZoneController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +20,10 @@ Route::get('/hello', [ApiController::class, 'hello']);
 
 Route::get('/events/{eventId}', [EventController::class, 'listAnEvent']);
 Route::post('/events/{eventId}/register', [EventController::class, 'registerForAnEvent']);
+
+Route::patch('/profile', [MemberController::class, 'updateMembership']);
+
+Route::post('/payments/webhook', [PaymentController::class, 'flutterwaveWebhook']);
 
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
@@ -36,9 +42,19 @@ Route::prefix('admin')->group(function () {
     Route::get('/zones', [ZoneController::class, 'getAllZones']);
     Route::get('/parishes', [ParishController::class, 'getAllParishes']);
     Route::get('/areas', [AreaController::class, 'getAllAreas']);
+    Route::get('/departments', [DepartmentController::class, 'getAllDepartments']);
+    Route::get('/positions', [PositionController::class, 'getAllPositions']);
 });
 
+// Admin
+Route::prefix('admin')->middleware(['auth:sanctum', 'isAdmin'])->group(function () {});
 Route::middleware(['auth:sanctum'/* , 'is_admin' */])->prefix('admin')->group(function () {
+
+    Route::post('/transactions/initiate', [TransactionController::class, 'initiatePayment']);
+
+    Route::get('/transactions', [TransactionController::class, 'getAllTransactions']);
+
+    Route::post('/payments/initiate', [PaymentController::class, 'initiatePayment']);
 
     Route::prefix('events')->group(function () {
         Route::get('/summary', [EventController::class, 'eventsSummary']);
@@ -91,7 +107,6 @@ Route::middleware(['auth:sanctum'/* , 'is_admin' */])->prefix('admin')->group(fu
     });
 
     Route::prefix('positions')->group(function () {
-        Route::get('/', [PositionController::class, 'getAllPositions']);
         Route::post('/', [PositionController::class, 'createAPosition']);
         Route::patch('/{positionId}', [PositionController::class, 'updateAPosition']);
     });

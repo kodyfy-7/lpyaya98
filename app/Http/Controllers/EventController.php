@@ -57,21 +57,21 @@ class EventController extends Controller
                 ], 404);
             }
 
-            $alreadyRegistered = EventParticipant::where('eventId', $eventId)
-                ->where(function ($q) use ($request) {
-                    $q->where('phoneNumber', $request->phoneNumber)
-                        ->orWhere('email', $request->email);
-                })
-                ->exists();
+            // $alreadyRegistered = EventParticipant::where('eventId', $eventId)
+            //     ->where(function ($q) use ($request) {
+            //         $q->where('phoneNumber', $request->phoneNumber)
+            //             ->orWhere('email', $request->email);
+            //     })
+            //     ->exists();
 
-            if ($alreadyRegistered) {
-                DB::rollBack();
+            // if ($alreadyRegistered) {
+            //     DB::rollBack();
 
-                return response()->json([
-                    'success' => false,
-                    'message' => "It appears you have already registered for this event using this phone number ({$request->phoneNumber}) or email ({$request->email})",
-                ], 400);
-            }
+            //     return response()->json([
+            //         'success' => false,
+            //         'message' => "It appears you have already registered for this event using this phone number ({$request->phoneNumber}) or email ({$request->email})",
+            //     ], 400);
+            // }
 
             $lastRegNumber = EventParticipant::where('eventId', $eventId)
                 ->latest('createdAt')
