@@ -54,7 +54,14 @@ Route::middleware(['auth:sanctum'/* , 'is_admin' */])->prefix('admin')->group(fu
 
     Route::get('/transactions', [TransactionController::class, 'getAllTransactions']);
 
-    Route::post('/payments/initiate', [PaymentController::class, 'initiatePayment']);
+    Route::prefix('payments')->group(function () {
+        Route::get('/initiate', [PaymentController::class, 'initiatePayment']);
+        Route::get('/summary', [PaymentController::class, 'summary']);
+        Route::get('/history', [PaymentController::class, 'history']);
+        // Route::post('/', [PaymentController::class, 'createPayment']);
+        // Route::patch('/{paymentId}', [PaymentController::class, 'updatePayment']);
+
+    });
 
     Route::prefix('events')->group(function () {
         Route::get('/summary', [EventController::class, 'eventsSummary']);
