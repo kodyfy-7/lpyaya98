@@ -5,6 +5,7 @@ use App\Http\Controllers\AreaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ParishController;
 use App\Http\Controllers\PasswordController;
@@ -58,10 +59,14 @@ Route::middleware(['auth:sanctum'/* , 'is_admin' */])->prefix('admin')->group(fu
         Route::get('/initiate', [PaymentController::class, 'initiatePayment']);
         Route::get('/summary', [PaymentController::class, 'summary']);
         Route::get('/history', [PaymentController::class, 'history']);
-        // Route::post('/', [PaymentController::class, 'createPayment']);
-        // Route::patch('/{paymentId}', [PaymentController::class, 'updatePayment']);
 
     });
+
+    Route::prefix('finance')->group(function () {
+        Route::get('/summary', [FinanceController::class, 'summary']);
+        Route::get('/dues', [FinanceController::class, 'dues']);
+    });
+    
 
     Route::prefix('events')->group(function () {
         Route::get('/summary', [EventController::class, 'eventsSummary']);

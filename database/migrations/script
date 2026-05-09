@@ -1,0 +1,106 @@
+-- ============================================================
+-- LP98 YAYA — Full Migration SQL
+-- Run in order. Safe to re-run (uses IF NOT EXISTS / IF EXISTS).
+-- ============================================================
+
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ------------------------------------------------------------
+-- 1. transactions
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `transactions` (
+    `id`             CHAR(36)       NOT NULL,
+    `user_id`        CHAR(36)       NOT NULL,
+    `amount`         DECIMAL(12, 2) NOT NULL,
+    `status`         VARCHAR(255)   NOT NULL DEFAULT 'pending',
+    `payment_method` VARCHAR(255)   NOT NULL DEFAULT 'flutterwave',
+    `reference`      VARCHAR(255)   NOT NULL,
+    `currency`       VARCHAR(255)   NOT NULL DEFAULT 'NGN',
+    `created_at`     TIMESTAMP      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at`     TIMESTAMP      NULL     DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_at`     TIMESTAMP      NULL     DEFAULT NULL,
+
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `transactions_reference_unique` (`reference`),
+    KEY `transactions_user_id_foreign` (`user_id`),
+
+    CONSTRAINT `transactions_user_id_foreign`
+        FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ------------------------------------------------------------
+-- 2. monthly_dues
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `monthly_dues` (
+    `id`          CHAR(36)        NOT NULL,
+    `area_id`     CHAR(36)        NOT NULL,
+    `month`       TINYINT UNSIGNED NOT NULL,
+    `year`        SMALLINT UNSIGNED NOT NULL,
+    `due_amount`  DECIMAL(12, 2)  NOT NULL,
+    `paid_amount` DECIMAL(12, 2)  NOT NULL DEFAULT 0.00,
+    `status`      ENUM('unpaid','partial','paid') NOT NULL DEFAULT 'unpaid',
+    `created_at`  TIMESTAMP       NULL DEFAULT NULL,
+    `updated_at`  TIMESTAMP       NULL DEFAULT NULL,
+    `deleted_at`  TIMESTAMP       NULL DEFAULT NULL,
+
+    PRIMARY KEY (`id`),
+    UNIQUE KEY `monthly_dues_period_area_unique` (`month`, `year`, `area_id`),
+    KEY `monthly_dues_area_id_foreign` (`area_id`),
+
+    CONSTRAINT `monthly_dues_area_id_foreign`
+        FOREIGN KEY (`area_id`) REFERENCES `areas` (`id`)
+        ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ------------------------------------------------------------
+-- 3. payments
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `payments` (
+    `id`              CHAR(36)        NOT NULL,
+    `transaction_id`  CHAR(36)        NULL DEFAULT NULL,
+    `area_id`         CHAR(36)        NOT NULL,
+    `monthly_due_id`  CHAR(36)        NULL DEFAULT NULL,
+    `paid_by_id`      CHAR(36)        NULL DEFAULT NULL,
+    `created_by_id`   CHAR(36)        NULL DEFAULT NULL,
+    `amount`          DECIMAL(12, 2)  NOT NULL,
+    `month`           TINYINT UNSIGNED NOT NULL,
+    `year`            YEAR            NOT NULL,
+    `paid_at`         TIMESTAMP       NULL DEFAULT NULL,
+    `status`          VARCHAR(255)    NOT NULL DEFAULT 'pending',
+    `created_at`      TIMESTAMP       NULL DEFAULT NULL,
+    `updated_at`      TIMESTAMP       NULL DEFAULT NULL,
+    `deleted_at`      TIMESTAMP       NULL DEFAULT NULL,
+
+    PRIMARY KEY (`id`),
+    KEY `payments_transaction_id_foreign`  (`transaction_id`),
+    KEY `payments_area_id_foreign`         (`area_id`),
+    KEY `payments_monthly_due_id_foreign`  (`monthly_due_id`),
+    KEY `payments_paid_by_id_foreign`      (`paid_by_id`),
+    KEY `payments_created_by_id_foreign`   (`created_by_id`),
+
+    CONSTRAINT `payments_transaction_id_foreign`
+        FOREIGN KEY (`transaction_id`) REFERENCES `transactions` (`id`)
+        ON DELETE SET NULL,
+
+    CONSTRAINT `payments_area_id_foreign`
+        FOREIGN KEY (`area_id`) REFERENCES `areas` (`id`)
+        ON DELETE CASCADE,
+
+    CONSTRAINT `payments_monthly_due_id_foreign`
+        FOREIGN KEY (`monthly_due_id`) REFERENCES `monthly_dues` (`id`)
+        ON DELETE SET NULL,
+
+    CONSTRAINT `payments_paid_by_id_foreign`
+        FOREIGN KEY (`paid_by_id`) REFERENCES `users` (`id`)
+        ON DELETE SET NULL,
+
+    CONSTRAINT `payments_created_by_id_foreign`
+        FOREIGN KEY (`created_by_id`) REFERENCES `users` (`id`)
+        ON DELETE SET NULL
+
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+SET FOREIGN_KEY_CHECKS = 1;
