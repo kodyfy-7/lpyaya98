@@ -74,6 +74,8 @@ Route::middleware(['auth:sanctum'/* , 'is_admin' */])->prefix('admin')->group(fu
         Route::post('/', [EventController::class, 'createEvent']);
         Route::patch('/{eventId}', [EventController::class, 'updateEvent']);
 
+        Route::post('/{eventId}/send-emails', [EventController::class, 'sendEventBlast']);
+
         Route::prefix('{eventId}/participants')->group(function () {
             Route::get('/', [EventController::class, 'eventParticipants']);
             Route::get('/charts', [EventController::class, 'eventParticipantCounts']);

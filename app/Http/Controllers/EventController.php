@@ -7,10 +7,12 @@ use App\Http\Requests\RegisterForEventRequest;
 use App\Http\Requests\UpdateEventRequest;
 use App\Http\Resources\EventParticipantResource;
 use App\Http\Resources\EventResource;
+use App\Jobs\DispatchEventBlastJob;
 use App\Mail\EventRegistrationMail;
 use App\Models\Area;
 // use App\Services\MailService;
 use App\Models\Event;
+use App\Models\EventBlast;
 use App\Models\EventParticipant;
 use App\Models\Parish;
 use App\Models\Zone;
@@ -481,4 +483,30 @@ class EventController extends Controller
     //         return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
     //     }
     // }
+
+    public function sendEventBlast(Request $request, string $eventId)
+    {
+        $validated = $request->validate([
+            'subject'     => ['required', 'string', 'max:255'],
+            'htmlContent' => ['required', 'string'],
+        ]);
+    
+        $blast = EventBlast::create([
+            'event_id'     => $eventId,
+            'subject'      => $validated['subject'],
+            'html_content' => $validated['htmlContent'],
+            'status'       => 'pending',
+        ]);
+    
+        DispatchEventBlastJob::dispatch($blast->id);
+    
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'blastId' => $blast->id,
+                'status'  => $blast->status,
+                'message' => 'Email blast queued successfully.',
+            ],
+        ], 202);
+    }
 }
