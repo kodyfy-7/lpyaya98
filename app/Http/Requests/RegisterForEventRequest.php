@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rules\Email;
 
 class RegisterForEventRequest extends FormRequest
 {
@@ -16,7 +17,7 @@ class RegisterForEventRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'phoneNumber' => 'required|string|max:20',
-            'email' => 'required|email',
+            'email'       => ['required', 'string', 'max:255', Email::default()->rfcCompliant()->validateMxRecord()],
             'gender' => 'nullable|string',
             'zoneId' => 'required|uuid|exists:zones,id',
             'areaId' => 'required|uuid|exists:areas,id',

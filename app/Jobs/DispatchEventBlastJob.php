@@ -31,8 +31,9 @@ class DispatchEventBlastJob implements ShouldQueue
 
         // Pull only the columns we need — avoid hydrating full models in memory
         $participants = EventParticipant::where('eventId', $blast->event_id)
-            ->select('id', 'email')
-            ->get();
+        ->where('is_valid', true)
+        ->select('id', 'email')
+        ->get();
 
         $blast->update(['total_participants' => $participants->count()]);
 

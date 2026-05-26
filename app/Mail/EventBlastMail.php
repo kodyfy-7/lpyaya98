@@ -24,9 +24,15 @@ class EventBlastMail extends Mailable
 
     public function content(): Content
     {
-        return new Content(
-            view: 'emails.event_blast',
-            with: ['htmlContent' => $this->htmlContent],
-        );
+        // We render the raw HTML directly without a Blade template
+        return new Content(htmlString: $this->htmlContent);
     }
+
+    // public function content(): Content
+    // {
+    //     return new Content(
+    //         view: 'emails.event_blast',
+    //         with: ['htmlContent' => $this->htmlContent],
+    //     );
+    // }
 }
