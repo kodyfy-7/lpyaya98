@@ -23,7 +23,7 @@ class EventParticipant extends Model
     protected $fillable = [
         'eventId', 'name', 'email', 'gender', 'phoneNumber',
         'zoneId', 'areaId', 'parishId', 'location',
-        'registrationApproved', 'registrationNumber', 'attended',
+        'registrationApproved', 'registrationNumber', 'attended', 'is_valid', 'invalid_reason',
     ];
 
     protected $casts = [

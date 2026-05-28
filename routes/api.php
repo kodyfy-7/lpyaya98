@@ -14,10 +14,13 @@ use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\ZoneController;
+use App\Http\Controllers\ValidateParticipantEmailsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/hello', [ApiController::class, 'hello']);
+
+Route::post('/admin/validate-participant-emails/{eventId}', [ValidateParticipantEmailsController::class, 'process']);
 
 Route::get('/events/{eventId}', [EventController::class, 'listAnEvent']);
 Route::post('/events/{eventId}/register', [EventController::class, 'registerForAnEvent']);
